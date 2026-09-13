@@ -1,0 +1,25 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Home Assistant Community App: MQTT Explorer
+# Runs the MQTT Explorer server
+# ==============================================================================
+
+export NODE_ENV="production"
+
+# Only ever listen on loopback; NGINX is what faces Ingress.
+export HOST="127.0.0.1"
+export PORT="49000"
+
+# Ingress is the only way in, and Home Assistant has already established who
+# is on the other end before a request gets here, so MQTT Explorer's own login
+# is switched off rather than asked for a second time.
+export MQTT_EXPLORER_SKIP_AUTH="true"
+
+bashio::log.info 'Starting MQTT Explorer...'
+
+# Everything MQTT Explorer keeps is stored below the working directory.
+cd /opt/mqtt-explorer \
+    || bashio::exit.nok "Could not change to the application directory"
+
+exec node dist/src/server.js

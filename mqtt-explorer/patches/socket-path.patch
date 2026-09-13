@@ -1,0 +1,20 @@
+diff --git a/app/src/browserEventBus.ts b/app/src/browserEventBus.ts
+index c87fcfe..30b6869 100644
+--- a/app/src/browserEventBus.ts
++++ b/app/src/browserEventBus.ts
+@@ -8,8 +8,14 @@ import { Rpc } from '../../events/EventSystem/Rpc'
+ let username = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('mqtt-explorer-username') || '' : ''
+ let password = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('mqtt-explorer-password') || '' : ''
+ 
+-// Connect to the server (same origin in browser mode)
++// Connect to the server (same origin in browser mode). The page is not
++// necessarily served from the root of the host: behind a reverse proxy that
++// mounts it on a path, the Socket.IO endpoint sits below that same path, so it
++// is resolved against the document location rather than assumed to be at /.
++const socketPath = new URL('socket.io/', document.baseURI).pathname
++
+ const socket: Socket = io({
++  path: socketPath,
+   auth: {
+     username,
+     password,

@@ -1,0 +1,12 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Home Assistant Community App: MQTT Explorer
+# Runs the NGINX daemon
+# ==============================================================================
+
+# Wait for MQTT Explorer to become available
+bashio::net.wait_for 49000 127.0.0.1
+
+bashio::log.info 'Starting NGINX...'
+exec nginx

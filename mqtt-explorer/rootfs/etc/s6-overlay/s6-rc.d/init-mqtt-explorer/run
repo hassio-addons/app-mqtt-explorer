@@ -1,0 +1,93 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Home Assistant Community App: MQTT Explorer
+# Prepares the storage and the connection to the Home Assistant MQTT broker
+# ==============================================================================
+declare -r settings="/data/mqtt-explorer/settings.json"
+declare encryption host password port username
+
+# Everything MQTT Explorer keeps lives under here: the connections it knows
+# about, the settings made in its interface, and the certificates and files
+# uploaded through it.
+#
+# It is a directory of its own rather than /data, which also holds this app's
+# configuration, so that what belongs to MQTT Explorer stays distinguishable
+# from what belongs to the app around it.
+mkdir -p /data/mqtt-explorer
+
+# Home Assistant knows about one MQTT broker, if a broker app that registers
+# itself is installed, and it hands out its address and credentials to apps
+# that ask. This puts that broker in MQTT Explorer's list of connections, so
+# it is a click away rather than something to look up and type in.
+if ! bashio::services.available "mqtt"; then
+    bashio::log.notice \
+        "Home Assistant has no MQTT broker on offer, so none was added to" \
+        "the connections. Brokers can still be added inside MQTT Explorer."
+    exit 0
+fi
+
+host=$(bashio::services "mqtt" "host")
+password=$(bashio::services "mqtt" "password")
+port=$(bashio::services "mqtt" "port")
+username=$(bashio::services "mqtt" "username")
+
+encryption="false"
+if [[ "$(bashio::services "mqtt" "ssl")" == "true" ]]; then
+    encryption="true"
+fi
+
+bashio::log.info \
+    "Adding the MQTT broker Home Assistant uses (${host}:${port})" \
+    "to the connections of MQTT Explorer..."
+
+if ! bashio::fs.file_exists "${settings}"; then
+    echo "{}" > "${settings}"
+fi
+
+# The settings file is MQTT Explorer's own store, one key per part of the
+# interface that keeps something, and the connections are a dictionary in it
+# keyed by ID. Only the entry for this broker is touched, and only the fields
+# that Home Assistant is the source of are written every time, so a name or a
+# subscription changed from inside MQTT Explorer stays as it was. It is put
+# first, which is the entry the connection dialog opens on.
+#
+# Certificate validation is off by default when the broker offers TLS: it is
+# reached by its name on the internal network, which is not a name any
+# certificate for it will carry.
+jq \
+    --arg host "${host}" \
+    --argjson port "${port}" \
+    --arg username "${username}" \
+    --arg password "${password}" \
+    --argjson encryption "${encryption}" \
+    '.ConnectionManager_connections = (
+        {
+            "home-assistant": (
+                {
+                    configVersion: 1,
+                    type: "mqtt",
+                    id: "home-assistant",
+                    name: "Home Assistant",
+                    protocol: "mqtt",
+                    certValidation: ($encryption | not),
+                    subscriptions: [
+                        {topic: "#", qos: 0},
+                        {topic: "$SYS/#", qos: 0}
+                    ]
+                }
+                + (.ConnectionManager_connections["home-assistant"] // {})
+                + {
+                    host: $host,
+                    port: $port,
+                    username: $username,
+                    password: $password,
+                    encryption: $encryption
+                }
+            )
+        }
+        + ((.ConnectionManager_connections // {}) | del(.["home-assistant"]))
+    )' "${settings}" > "${settings}.tmp" \
+    || bashio::exit.nok "Could not update the connections of MQTT Explorer"
+
+mv "${settings}.tmp" "${settings}"

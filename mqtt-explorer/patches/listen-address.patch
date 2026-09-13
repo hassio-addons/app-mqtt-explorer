@@ -1,0 +1,24 @@
+diff --git a/src/server.ts b/src/server.ts
+index c711a9b..e2f2748 100644
+--- a/src/server.ts
++++ b/src/server.ts
+@@ -19,6 +19,7 @@ import { getAppVersion, writeToFile, readFromFile, addMqttConnectionEvent } from
+ import { RpcEvents } from '../events/EventsV2'
+ 
+ const PORT = process.env.PORT || 3000
++const HOST = process.env.HOST || '0.0.0.0'
+ const CREDENTIALS_PATH = path.join(process.cwd(), 'data', 'credentials.json')
+ const MAX_FILE_SIZE = 16 * 1024 * 1024 // 16MB limit for file uploads
+ const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['*']
+@@ -699,9 +700,9 @@ async function startServer() {
+   })
+ 
+   // Start server
+-  server.listen(PORT, () => {
++  server.listen(Number(PORT), HOST, () => {
+     console.log('='.repeat(60))
+-    console.log(`MQTT Explorer server running on http://localhost:${PORT}`)
++    console.log(`MQTT Explorer server running on http://${HOST}:${PORT}`)
+     console.log('='.repeat(60))
+   })
+ 
