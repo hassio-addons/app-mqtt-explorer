@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.7
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.8
 ARG MQTT_EXPLORER_VERSION="35f31973c456a024a37450f5961e4610dc9a9ce0"
 
 # MQTT Explorer is a desktop application first, and its web edition is built
