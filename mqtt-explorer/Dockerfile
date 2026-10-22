@@ -67,7 +67,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # which is pointed at the app's own storage so that it survives an update.
 RUN \
     apk add --no-cache \
-        nginx=1.30.4-r1 \
+        nginx=1.30.6-r0 \
         nodejs=24.18.1-r0 \
     \
     && rm -f -r \
