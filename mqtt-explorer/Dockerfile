@@ -35,7 +35,7 @@ COPY patches /patches
 # hadolint ignore=DL3003
 RUN \
     apk add --no-cache \
-        nodejs=24.18.1-r0 \
+        nodejs=24.22.1-r0 \
         npm=11.12.1-r0 \
         patch=2.8-r0 \
         yarn=1.22.22-r1 \
@@ -68,7 +68,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN \
     apk add --no-cache \
         nginx=1.30.6-r0 \
-        nodejs=24.18.1-r0 \
+        nodejs=24.22.1-r0 \
     \
     && rm -f -r \
         /etc/nginx \
