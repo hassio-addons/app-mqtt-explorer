@@ -37,7 +37,7 @@ RUN \
     apk add --no-cache \
         nodejs=24.22.1-r1 \
         npm=11.12.1-r0 \
-        patch=2.8-r0 \
+        patch=2.8.1-r0 \
         yarn=1.22.22-r1 \
     \
     && curl -J -L -o /tmp/mqtt-explorer.tar.gz \
